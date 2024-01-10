@@ -27,6 +27,7 @@ const schemeName = "nacos"
 type builder struct{}
 
 func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts resolver.BuildOptions) (resolver.Resolver, error) {
+	fmt.Print("==> grpc-go/resolver/resolver.go Build 接口实现 <====")
 	tgt, err := parseURL(url.URL)
 	if err != nil {
 		return nil, errors.Wrap(err, "Wrong nacos URL")
