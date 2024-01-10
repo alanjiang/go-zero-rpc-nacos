@@ -14,6 +14,8 @@ import (
 )
 
 func init() {
+
+    fmt.Print("----> nacos init <-----")
 	resolver.Register(&builder{})
 }
 
