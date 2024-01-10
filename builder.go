@@ -42,6 +42,8 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 	sc := []constant.ServerConfig{
 		*constant.NewServerConfig(host, port),
 	}
+
+	 /*
 	cc := &constant.ClientConfig{
 		AppName:     tgt.AppName,
 		NamespaceId: tgt.NamespaceID,
@@ -50,7 +52,23 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 		TimeoutMs:   uint64(tgt.Timeout),
 		NotLoadCacheAtStart:  tgt.NotLoadCacheAtStart,
 		UpdateCacheWhenEmpty: tgt.UpdateCacheWhenEmpty,
-	}
+	} */
+
+
+	// start
+	cc := *constant.NewClientConfig(
+                	constant.WithTimeoutMs(10*1000),
+                	constant.WithBeatInterval(2*1000),
+                	constant.WithNotLoadCacheAtStart(false),
+                	constant.WithAccessKey(tgt.User),
+                	constant.WithSecretKey(tgt.Password),
+                	constant.WithNamespaceId(tgt.NamespaceID),
+                	constant.WithOpenKMS(false),
+                	//constant.WithKMSVersion(constant.KMSv3),
+                	constant.WithRegionId("cn-hangzhou-e"),
+      )
+
+	// end
 
 	if tgt.CacheDir != "" {
 		cc.CacheDir = tgt.CacheDir
