@@ -93,11 +93,3 @@ func parseURL(rawURL url.URL) (target, error) {
 	return tgt, nil
 }
 
-
-// test the parseURL
-function main() {
-
-
-
-
-}
