@@ -46,7 +46,7 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 		AppName:     tgt.AppName,
 		NamespaceId: tgt.NamespaceID,
 		AccessKey:    tgt.User,
-		SectetKey:    tgt.Password,
+		SecretKey:    tgt.Password,
 		TimeoutMs:   uint64(tgt.Timeout),
 		NotLoadCacheAtStart:  tgt.NotLoadCacheAtStart,
 		UpdateCacheWhenEmpty: tgt.UpdateCacheWhenEmpty,

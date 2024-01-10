@@ -68,8 +68,8 @@ func parseURL(rawURL url.URL) (target, error) {
 	tgt.LogDir = os.Getenv("NACOS_LOG_DIR")
 	tgt.CacheDir = os.Getenv("NACOS_CACHE_DIR")
 
-	tgt.AccessKey = rawURL.User.Username()
-	tgt.SecretKey, _ = rawURL.User.Password()
+	tgt.User = rawURL.User.Username()
+	tgt.Password, _ = rawURL.User.Password()
 	tgt.Addr = rawURL.Host
 	tgt.Service = strings.TrimLeft(rawURL.Path, "/")
 
