@@ -42,12 +42,11 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 	sc := []constant.ServerConfig{
 		*constant.NewServerConfig(host, port),
 	}
-
 	cc := &constant.ClientConfig{
 		AppName:     tgt.AppName,
 		NamespaceId: tgt.NamespaceID,
-		AccessKey:    tgt.AccessKey,
-		SectetKey:    tgt.SectetKey,
+		AccessKey:    tgt.User,
+		SectetKey:    tgt.Password,
 		TimeoutMs:   uint64(tgt.Timeout),
 		NotLoadCacheAtStart:  tgt.NotLoadCacheAtStart,
 		UpdateCacheWhenEmpty: tgt.UpdateCacheWhenEmpty,

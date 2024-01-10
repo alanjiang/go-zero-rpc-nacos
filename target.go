@@ -15,7 +15,7 @@ type target struct {
 	User        string        `key:",optional"`
 	Password    string        `key:",optional"`
 	AcccessKey  string        `key:",optional"`
-	SecretKey    string        `key:",optional"`
+	SecretKey    string       `key:",optional"`
 	Service     string        `key:",optional"`
 	GroupName   string        `key:",optional"`
 	Clusters    []string      `key:",optional"`
