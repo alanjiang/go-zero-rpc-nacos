@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 	"time"
-
+    "fmt"
 	"github.com/pkg/errors"
 	"github.com/zeromicro/go-zero/core/mapping"
 )
@@ -34,16 +34,28 @@ func parseURL(rawURL url.URL) (target, error) {
 	if rawURL.Scheme != schemeName ||
 		len(rawURL.Host) == 0 || len(strings.TrimLeft(rawURL.Path, "/")) == 0 {
 		return target{},
-			errors.Errorf("Malformed URL('%s'). Must be in the next format: 'nacos://[user:passwd]@host/service?param=value'", rawURL.String())
+			errors.Errorf("Malformed URL('%s'). Must be in the next format: 'nacos://[accessKey:sectetKey]@host/service?param=value'", rawURL.String())
 	}
 
 	var tgt target
+	fmt.Print("===>rawURL ", rawURL)
+
+	fmt.Print("rawURL<=====")
+
+	fmt.Print("===>rawURL.Query()", rawURL.Query())
+
+	fmt.Print("rawURL.Query() <====")
+
 	params := make(map[string]interface{}, len(rawURL.Query()))
 	for name, value := range rawURL.Query() {
 		params[name] = value[0]
+		fmt.Print("name <====", name)
+		fmt.Print("value <====", value)
 	}
 
 	err := mapping.UnmarshalKey(params, &tgt)
+
+
 	if err != nil {
 		return target{}, errors.Wrap(err, "Malformed URL parameters")
 	}
@@ -56,8 +68,8 @@ func parseURL(rawURL url.URL) (target, error) {
 	tgt.LogDir = os.Getenv("NACOS_LOG_DIR")
 	tgt.CacheDir = os.Getenv("NACOS_CACHE_DIR")
 
-	tgt.User = rawURL.User.Username()
-	tgt.Password, _ = rawURL.User.Password()
+	tgt.AccessKey = rawURL.User.Username()
+	tgt.SecretKey, _ = rawURL.User.Password()
 	tgt.Addr = rawURL.Host
 	tgt.Service = strings.TrimLeft(rawURL.Path, "/")
 
@@ -76,7 +88,8 @@ func parseURL(rawURL url.URL) (target, error) {
 	if updateCacheWhenEmpty, exists := os.LookupEnv("NACOS_UPDATE_CACHE_WHEN_EMPTY"); exists {
 		tgt.UpdateCacheWhenEmpty = updateCacheWhenEmpty == "true"
 	}
-
+    fmt.Print("===>target:", tgt)
+    fmt.Print("target<======")
 	return tgt, nil
 }
 
