@@ -1,6 +1,12 @@
 ### Background（背景）
 
- 在实际的项目中，我们以go-zero 作为gRpc 网关，由网关将请求路由至后端gRpc 微服务。
+ 在实际的项目中，我们以go-zero 作为gRpc 网关，由网关将请求路由至后端gRpc 微服务。采用nacos作为配置中心和服务发现。打造高可用的微服务网关。整体架构如下：
+
+
+
+![https://github.com/alanjiang/go-zero-rpc-nacos/blob/master/grpc.jpg](https://github.com/alanjiang/go-zero-rpc-nacos/blob/master/grpc.jpg)
+
+
 
 但面临的问题是： go-zero默认以 ETCD作为服务发现， 而nacos 作为服务发现需要自己去实现，文档在这块也是缺失的，参考的资料凤毛鳞角，给广大开发者带来困拢。
 
@@ -83,4 +89,14 @@ func init() {
 	  resolver.Register(&builder{})
 }
 ```
+
+
+
+
+
+## 关注作者：
+
+抖音号： 80758963124
+
+
 
