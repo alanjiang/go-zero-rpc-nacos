@@ -1,65 +1,86 @@
-### Quick Start
+### Background（背景）
 
-Prerequisites:
+ 在实际的项目中，我们以go-zero 作为gRpc 网关，由网关将请求路由至后端gRpc 微服务。
 
-Download the module:
+但面临的问题是： go-zero默认以 ETCD作为服务发现， 而nacos 作为服务发现需要自己去实现，文档在这块也是缺失的，参考的资料凤毛鳞角，给广大开发者带来困拢。
 
-```console
-go get -u github.com/zeromicro/zero-contrib/zrpc/registry/nacos
-```
+于是看到开源项目：
 
-For example:
+https://github.com/zeromicro/zero-contrib/tree/main/zrpc/registry
 
-## Service
+问题是开源项目只给出了 用户名/密码这种连接nacos的认证方式，并不支持 accessKey/secretKey这种方式。
+
+而阿里云的accessKey/secretKey连接方式安全性较高，是推荐的一种连接方式。
+
+故在开源项目https://github.com/zeromicro/zero-contrib/tree/main/zrpc/registry的基础上，我们作了修改
+
+以布了新的服务。
+
+## 如何引入？
+
+` _ "github.com/alanjiang/go-zero-rpc-nacos"`
+
+## 网关代码参见：
 
 - main.go
 
 ```go
-import _ "github.com/zeromicro/zero-contrib/zrpc/registry/nacos"
+package main
+
+import (
+    "github.com/zeromicro/go-zero/core/logx"
+    "net/http"
+	"flag"
+	"github.com/zeromicro/go-zero/core/conf"
+	"github.com/zeromicro/go-zero/gateway"
+	 _ "github.com/alanjiang/go-zero-rpc-nacos"
+)
+
+var configFile = flag.String("f", "etc/gateway.yaml", "config file")
+
 
 func main() {
 	flag.Parse()
 
-	var c config.Config
+	var c gateway.GatewayConf
 	conf.MustLoad(*configFile, &c)
+	gw := gateway.MustNewServer(c)
+	defer gw.Stop()
 
-	server := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {
+	gw.Start()
+}
 
-	})
-	// register service to nacos
-	sc := []constant.ServerConfig{
-		*constant.NewServerConfig("192.168.100.15", 8848),
-	}
+	
+```
 
-	cc := &constant.ClientConfig{
-		NamespaceId:         "public",
-		TimeoutMs:           5000,
-		NotLoadCacheAtStart: true,
-		LogDir:              "/tmp/nacos/log",
-		CacheDir:            "/tmp/nacos/cache",
-		RotateTime:          "1h",
-		MaxAge:              3,
-		LogLevel:            "debug",
-	}
+## 
 
-	opts := nacos.NewNacosConfig("nacos.rpc", c.ListenOn, sc, cc)
-	_ = nacos.RegisterService(opts)
-	server.Start()
+
+
+- etc/gateway.yaml
+
+```yaml
+
+Target: nacos://accessKey:secretKey@nacos服务器域名:8848/logistic.rpc?namespaceid=空间ID&timeout=13000ms
+    Mappings:
+        - Method: put
+          Path: /logistic/query
+          RpcPath: logistic.LogisticService/Query               
+```
+
+
+
+通过以上的配置就可实现查询 服务名为 ：logistic.rpc 的快递服务。
+
+注：网关不需要注册客户端。 
+
+引入  _ "github.com/alanjiang/go-zero-rpc-nacos" 会自动执行 builder.go 的 init 方法。
+
+```
+func init() {
+
+    fmt.Print("----> nacos init <-----")
+	  resolver.Register(&builder{})
 }
 ```
 
-## Client
-
-- main.go
-
-```go
-import _ "github.com/zeromicro/zero-contrib/zrpc/registry/nacos"
-```
-
-- etc/\*.yaml
-
-```yaml
-# nacos://[user:passwd]@host/service?param=value'
-
-Target: nacos://192.168.100.15:8848/nacos.rpc?namespaceid=public&timeout=5000s
-```
