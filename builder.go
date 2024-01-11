@@ -72,7 +72,7 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 	cc := *constant.NewClientConfig(
                 	constant.WithTimeoutMs(10*1000),
                 	constant.WithBeatInterval(2*1000),
-                	constant.WithNotLoadCacheAtStart(false),
+                	constant.WithNotLoadCacheAtStart(true),
                 	constant.WithAccessKey(tgt.User),
                 	constant.WithSecretKey(tgt.Password),
                 	constant.WithNamespaceId(tgt.NamespaceID),
