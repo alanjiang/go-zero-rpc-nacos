@@ -20,7 +20,7 @@ https://github.com/zeromicro/zero-contrib/tree/main/zrpc/registry
 
 故在开源项目https://github.com/zeromicro/zero-contrib/tree/main/zrpc/registry的基础上，我们作了修改
 
-以布了新的服务。
+并发布了新的服务。
 
 ## 如何引入？
 
