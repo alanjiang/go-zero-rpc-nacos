@@ -39,11 +39,24 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 	}
 	port, _ := strconv.ParseUint(ports, 10, 16)
 
+	fmt.Print("********Host, port ******")
+
+	fmt.Print("**port:", port)
+
+	fmt.Print("**host:", host)
+
+	fmt.Print("********Host, port ******")
+
+	sc := []constant.ServerConfig{
+        		*constant.NewServerConfig(host, port, constant.WithContextPath("/nacos")),
+     }
+
+
+    /*
 	sc := []constant.ServerConfig{
 		*constant.NewServerConfig(host, port),
 	}
 
-	 /*
 	cc := &constant.ClientConfig{
 		AppName:     tgt.AppName,
 		NamespaceId: tgt.NamespaceID,
