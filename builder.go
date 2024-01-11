@@ -69,7 +69,7 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 
 
 	// start
-	cc := *constant.NewClientConfig(
+	cc :=  &constant.NewClientConfig(
                 	constant.WithTimeoutMs(10*1000),
                 	constant.WithBeatInterval(2*1000),
                 	constant.WithNotLoadCacheAtStart(true),
@@ -113,7 +113,7 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 	ctx, cancel := context.WithCancel(context.Background())
 	pipe := make(chan []string)
     tgt.GroupName = "prod"
-    tgt.Clusters = "DEFAULT"
+
 
 
 	go cli.Subscribe(&vo.SubscribeParam{
