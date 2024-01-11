@@ -80,16 +80,28 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 		cc.LogLevel = tgt.LogLevel
 	}
 
+
+    fmt.Print("===>nacos:", tgt)
+
+     fmt.Print("nacos<=====")
+
 	cli, err := clients.NewNamingClient(vo.NacosClientParam{
 		ServerConfigs: sc,
 		ClientConfig:  cc,
 	})
+
+
+
+
 	if err != nil {
 		return nil, errors.Wrap(err, "Couldn't connect to the nacos API")
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	pipe := make(chan []string)
+    tgt.GroupName = "prod"
+    tgt.Clusters = "DEFAULT"
+
 
 	go cli.Subscribe(&vo.SubscribeParam{
 		ServiceName:       tgt.Service,
