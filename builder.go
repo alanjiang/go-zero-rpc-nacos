@@ -112,9 +112,9 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 
 	ctx, cancel := context.WithCancel(context.Background())
 	pipe := make(chan []string)
-    tgt.GroupName = "prod"
+    tgt.GroupName = tgt.GroupName
 
-
+    fmt.Print("***GroupName", tgt.GroupName)
 
 	go cli.Subscribe(&vo.SubscribeParam{
 		ServiceName:       tgt.Service,
