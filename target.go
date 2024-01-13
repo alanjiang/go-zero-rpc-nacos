@@ -46,23 +46,30 @@ func parseURL(rawURL url.URL) (target, error) {
 
 	fmt.Print("rawURL.Query() <====")
 
+	// rawURL.Query()值为： map[groupName:[dev] namespaceid:[862309f6-ed95-49a4-87f1-d7fafdc03bae] timeout:[13000ms]]
+
 	params := make(map[string]interface{}, len(rawURL.Query()))
+	var groupName string
 	for name, value := range rawURL.Query() {
 		params[name] = value[0]
 		fmt.Print("name <====", name)
-		fmt.Print("value <====", value)
+		fmt.Print("value <====", value[0])
+		if name == "groupname"  {
+
+		    groupName = value[0]
+		    fmt.Print("获取groupName value",groupName)
+
+		}
 	}
 
 	err := mapping.UnmarshalKey(params, &tgt)
 
+    tgt.GroupName =  groupName
 
 	if err != nil {
 		return target{}, errors.Wrap(err, "Malformed URL parameters")
 	}
 
-	if tgt.NamespaceID == "" {
-		tgt.NamespaceID = "public"
-	}
 
 	tgt.LogLevel = os.Getenv("NACOS_LOG_LEVEL")
 	tgt.LogDir = os.Getenv("NACOS_LOG_DIR")
