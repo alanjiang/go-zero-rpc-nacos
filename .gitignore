@@ -1,0 +1,12 @@
+pkg
+src/main
+src/main-ldflags
+pkg
+github.com
+.DS_Store
+bin
+src/.DS_Store
+src/go.mod
+src/go.sum
+
+

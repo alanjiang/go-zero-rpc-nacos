@@ -3,8 +3,9 @@ package nacos
 import (
 	"context"
 	"fmt"
-	"net"
+	//"net"
 	"strconv"
+	"strings"
 
 	"github.com/nacos-group/nacos-sdk-go/v2/clients"
 	"github.com/nacos-group/nacos-sdk-go/v2/common/constant"
@@ -23,8 +24,13 @@ func init() {
 // All target URLs like 'nacos://.../...' will be resolved by this resolver
 const schemeName = "nacos"
 
+
+
+
 // builder implements resolver.Builder and use for constructing all consul resolvers
 type builder struct{}
+
+
 
 func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts resolver.BuildOptions) (resolver.Resolver, error) {
 	fmt.Print("==> grpc-go/resolver/resolver.go Build 接口实现 <====")
@@ -33,52 +39,35 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 		return nil, errors.Wrap(err, "Wrong nacos URL")
 	}
 
-	host, ports, err := net.SplitHostPort(tgt.Addr)
-	if err != nil {
-		return nil, fmt.Errorf("failed parsing address error: %v", err)
-	}
-	port, _ := strconv.ParseUint(ports, 10, 16)
+	fmt.Print(tgt.User)
+    fmt.Print(tgt.Password)
+    fmt.Print(tgt.Addr)
+    parts := strings.Split(tgt.Addr, ";")
+    var results []IpAddress
+    for _, part := range parts {
+        part = strings.TrimSpace(part)
+        ipPort := strings.Split(part, ":")
+        results = append(results, IpAddress{IP: ipPort[0], Port: ipPort[1]})
+    }
 
-	fmt.Print("********Host, port ******")
+    var sc []constant.ServerConfig
+    for _, result := range results {
+       port, _ := strconv.ParseUint(result.Port, 10, 64)
+       sc = append(sc, *constant.NewServerConfig(result.IP, port, constant.WithContextPath("/nacos")))
+    }
 
-	fmt.Print("**port:", port)
-
-	fmt.Print("**host:", host)
-
-	fmt.Print("********Host, port ******")
-
-	sc := []constant.ServerConfig{
-        		*constant.NewServerConfig(host, port, constant.WithContextPath("/nacos")),
-     }
-
-
-    /*
-	sc := []constant.ServerConfig{
-		*constant.NewServerConfig(host, port),
-	}
-
-	cc := &constant.ClientConfig{
-		AppName:     tgt.AppName,
-		NamespaceId: tgt.NamespaceID,
-		AccessKey:    tgt.User,
-		SecretKey:    tgt.Password,
-		TimeoutMs:   uint64(tgt.Timeout),
-		NotLoadCacheAtStart:  tgt.NotLoadCacheAtStart,
-		UpdateCacheWhenEmpty: tgt.UpdateCacheWhenEmpty,
-	} */
 
 
 	// start
 	cc :=  constant.NewClientConfig(
-                	constant.WithTimeoutMs(10*1000),
-                	constant.WithBeatInterval(2*1000),
-                	constant.WithNotLoadCacheAtStart(true),
-                	constant.WithAccessKey(tgt.User),
-                	constant.WithSecretKey(tgt.Password),
-                	constant.WithNamespaceId(tgt.NamespaceID),
-                	constant.WithOpenKMS(false),
-                	//constant.WithKMSVersion(constant.KMSv3),
-                	constant.WithRegionId("cn-hangzhou-e"),
+        constant.WithTimeoutMs(10*1000),
+        constant.WithBeatInterval(2*1000),
+        constant.WithNotLoadCacheAtStart(true),
+        constant.WithUsername(tgt.User),
+        constant.WithPassword(tgt.Password),
+        constant.WithNamespaceId(tgt.NamespaceID),
+        constant.WithOpenKMS(false),
+
       )
 
 	// end
@@ -132,4 +121,9 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 // Scheme is defined at https://github.com/grpc/grpc/blob/master/doc/naming.md.
 func (b *builder) Scheme() string {
 	return schemeName
+}
+
+type IpAddress struct {
+   IP      string
+   Port    string
 }

@@ -1,0 +1,120 @@
+package nacos
+
+import (
+	"context"
+	"fmt"
+	"net"
+	"strconv"
+
+	"github.com/nacos-group/nacos-sdk-go/v2/clients"
+	"github.com/nacos-group/nacos-sdk-go/v2/common/constant"
+	"github.com/nacos-group/nacos-sdk-go/v2/vo"
+	"github.com/pkg/errors"
+	"google.golang.org/grpc/resolver"
+	"strings"
+)
+
+func init() {
+
+    fmt.Print("----> nacos for user/password init  <-----\n")
+	resolver.Register(&builder{})
+}
+
+// schemeName for the urls
+// All target URLs like 'nacos://.../...' will be resolved by this resolver
+const schemeName = "nacos"
+
+// builder implements resolver.Builder and use for constructing all consul resolvers
+type builder struct{}
+
+type IpAddress struct {
+   IP      string
+   Port    string
+}
+
+func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts resolver.BuildOptions) (resolver.Resolver, error) {
+	fmt.Print("==> grpc-go/resolver/resolver.go Build 接口实现 <====")
+	tgt, err := parseURL(url.URL)
+	if err != nil {
+		return nil, errors.Wrap(err, "Wrong nacos URL")
+	}
+    fmt.Print(tgt.User)
+    fmt.Print(tgt.Password)
+    fmt.Print(tgt.Addr)
+    parts := strings.Split(tgt.Addr, ";")
+    var results []IpAddress
+    for _, part := range parts {
+        part = strings.TrimSpace(part)
+        ipPort := strings.Split(part, ":")
+        results = append(results, IpAddress{IP: ipPort[0], Port: ipPort[1]} )
+
+    var sc []constant.ServerConfig
+    for _, result := range results {
+       sc = append(sc, *constant.NewServerConfig(result.IP, result.Port, constant.WithContextPath("/nacos")))
+
+    }
+
+
+	// start
+	cc :=  constant.NewClientConfig(
+            constant.WithTimeoutMs(10*1000),
+            constant.WithBeatInterval(3*1000),
+            constant.WithNotLoadCacheAtStart(true),
+            constant.WithNamespaceId(tgt.NamespaceID),
+            constant.WithOpenKMS(false),
+            constant.WithUsername(tgt.User),
+            constant.WithPassword(tgt.Password),
+      )
+
+	// end
+
+	if tgt.CacheDir != "" {
+    		cc.CacheDir = tgt.CacheDir
+    	}
+    	if tgt.LogDir != "" {
+    		cc.LogDir = tgt.LogDir
+    	}
+    	if tgt.LogLevel != "" {
+    		cc.LogLevel = tgt.LogLevel
+    	}
+
+
+        fmt.Print("===>nacos:", tgt)
+
+         fmt.Print("nacos<=====")
+
+    	cli, err := clients.NewNamingClient(vo.NacosClientParam{
+    		ServerConfigs: sc,
+    		ClientConfig:  cc,
+    	})
+
+
+
+
+    	if err != nil {
+    		return nil, errors.Wrap(err, "Couldn't connect to the nacos API")
+    	}
+
+    	ctx, cancel := context.WithCancel(context.Background())
+    	pipe := make(chan []string)
+        tgt.GroupName = tgt.GroupName
+
+        fmt.Print("***GroupName", tgt.GroupName)
+
+    	go cli.Subscribe(&vo.SubscribeParam{
+    		ServiceName:       tgt.Service,
+    		Clusters:          tgt.Clusters,
+    		GroupName:         tgt.GroupName,
+    		SubscribeCallback: newWatcher(ctx, cancel, pipe).CallBackHandle, // required
+    	})
+
+    	go populateEndpoints(ctx, conn, pipe)
+
+    	return &resolvr{cancelFunc: cancel}, nil
+    }
+
+    // Scheme returns the scheme supported by this resolver.
+    // Scheme is defined at https://github.com/grpc/grpc/blob/master/doc/naming.md.
+    func (b *builder) Scheme() string {
+    	return schemeName
+    }
